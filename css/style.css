@@ -1,1 +1,6 @@
 /* style.css */
+div.column { 
+	display: inline-block;
+	width:32%;
+	border: 1px dotted grey ;
+}
