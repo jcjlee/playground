@@ -24,7 +24,7 @@
         <input type="text" class="input" ng-model="playerName" ng-model-instant>
         <button ng-click="addPlayer()">Add Player</button>
       </form>
-      <button ng-click="displayOptions()">Done</button>
+      <button ng-click="generatePairings()">Done</button>
       <ul ng-repeat="player in players">
         <li>{{player.name}}</li>
       </ul>
@@ -34,9 +34,16 @@
     </div>
     <div class="step-three column">
     </div>
+    <div id="dashboard">
+      <span>matches: {{matches}}</span>
+      <span>totalRounds: {{totalRounds}}</span>
+      <span>roundsPlayed: {{roundsPlayed}}</span>
+      <span>currentRound: {{currentRound}}</span>
+      <span>playerName: {{playerName}}</span>
+    </div>
+  </div><!--end of scope-->
+    <div class="content">
+      Hello.
   </div>
-  <div class="content">
-    Hello.
-  </div
-></body>
+</body>
 </html>
