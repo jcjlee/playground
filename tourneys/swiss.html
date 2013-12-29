@@ -30,10 +30,11 @@
       </ul>
     </div>
     <div class="step-two column">
+      <span ng-class="displayRounds">Round {{getCurrentRound()}} Pairings </span>
       <ul ng-repeat="match in pairings">
-        <li>{{match.player1}} vs {{match.player2}}</li>
+        <li >{{match.player1.name}} vs {{match.player2.name}}</li>
       </ul>
-
+      <button ng-click="recordRound()">Submit Round</button>
     </div>
     <div class="step-three column">
     </div>

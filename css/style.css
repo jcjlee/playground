@@ -4,3 +4,7 @@ div.column {
 	width:32%;
 	border: 1px dotted grey ;
 }
+
+.hidden {
+	display: none;
+}
