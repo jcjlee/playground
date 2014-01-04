@@ -8,6 +8,7 @@ var players = [
 	roundsPlayed = 0,
 	currentRound = 0,
 	pairings = [];
+
 function SwissCtrl($scope) {
 	// Array of player objects
 	$scope.players = players;
@@ -44,7 +45,7 @@ function SwissCtrl($scope) {
  */
 function assignPlayerNumbers (list) {
 	for(var i = 0; i < list.length; i++) {
-			list[i].pId=i+1;
+			list[i].playerId=i+1;
 		}
 	return list;
 }
@@ -67,10 +68,10 @@ function getRandomIndex (length) {
 
 /** Returns either 0.333 or the match win percentage rounded to thousandths, 
  *  whichever is greater.
- *  @param matches {Number} the number of matches the player has played
  *  @param points {Number} the number of points the player has earned
+ *  @param matches {Number} the number of matches the player has played
  */
-function calculateMWP (matches, points) {
+function calculateMWP (points, matches) {
 	var percentage = Math.round(points/(matches*3)*1000)/1000;
 	return 0.333 > percentage ? 0.333 : percentage;
 }
@@ -81,7 +82,7 @@ function calculateMWP (matches, points) {
  */
 function getPlayerByNum (num) {
 	for (var i = 0; i < players.length; i++) {
-		if (num == players.pId) {
+		if (num == players.playerId) {
 			return players[i];
 		}
 	}
@@ -92,30 +93,46 @@ function getPlayerByNum (num) {
  *  @param round {Number} The round number
  *  @param id {Number} the match number for this round
  */
-function createMatchObj (p1, p2, round, id) {
+function createMatchObj (player1, player2, round, id) {
 	var match = {};
 	// Assemble the match ID string
-	match.mId = "r" + round + "m" + id;
+	match.matchId = "r" + round + "m" + id;
 
 	// Special bye logic
-	if (p1 == '0') {
-		match.player1 = "BYE";
-		match.player2 = p2;
+	if (player1 == '0') {
+		match.player1 = player2;
+		match.player2 = "BYE";
 	}
-	else if (p2 == '0') {
-		match.player1 = p1;
+	else if (player2 == '0') {
+		match.player1 = player1;
 		match.player2 = "BYE";
 	}
 
 	// Create a normal match
 	else {
-		match.player1 = p1;
-		match.player2 = p2;
+		match.player1 = player1;
+		match.player2 = player2;
 		match.round = round;
 	}
-	console.log("Returning match: " + match.mId);
+	console.log("Returning match: " + match.matchId);
 	return match;
+}
 
+/** Gets the match points earned for a player
+ *  @param match {Object} The match object in question
+ *  @param playerId {int} The ID of the player in question
+ */
+function getMatchResult (match, playerId) {
+	var poc = playerId == match.player1 ? match.player1 : match.player2;
+	if (p1g > p2g) {
+		return match.player1 == poc ? 3 : 0;
+	}
+	else if (p1g < p2g) {
+		return match.player1 == poc ? 0 : 3;
+	}
+	else if (p1g=p2g) {
+		return 1;
+	}
 }
 
 function initialPairings (playerList) {
@@ -173,14 +190,28 @@ function refreshPlayers (playerlist, matchList) {
 	// Give out points for each match's result
 	for (var i = 0; i < matchList.length; i++) {
 		var matchObj = matchList[i],
-			player1 = getPlayerByNum(matchObj.p1),
-			player2 = getPlayerByNum(matchObj.p2);
-		player1.points += getMatchResult(matchObj, player1.pId);
-		player2.points += getMatchResult(matchObj, player2.pId);
-		player1.gamesPlayed += matchObj.p1g + matchObj.p2g;
-		player2.gamesPlayed += matchObj.p1g + matchObj.p2g;
+			totalGames,
+			player1 = getPlayerByNum(matchObj.player1),
+			player2 = getPlayerByNum(matchObj.player2);
+		player1.points += getMatchResult(matchObj, player1.playerId);
+		player2.points += getMatchResult(matchObj, player2.playerId);
+		totalGames = matchObj.player1g + matchObj.player2g + matchObj.gamesDrawn;
+		player1.gamesPlayed += totalGames;
+		player2.gamesPlayed += totalGames;
+		player1.gamePoints += matchObj.player1g*3 + matchObj.gamesDrawn;
+		player2.gamePoints += matchObj.player2g*3 + matchObj.gamesDrawn;
 	}
 	// Set OMW
+	for (var i = 0; i < playerList.length; i++) {
+		var percentages = [],
+			omwSum = 0;
+		for (var x = 0; x < playerList[i].prevOpps.length; x++) {
+			var opponent = getPlayerByNum(playerList[i].prevOpps[x]);
+			percentages.push(calculateMWP(opponent.matches.length, opponent.points));
+		}
+		playerList[i].OMW = percentages.reduce(function(a,b) { return a + b;})/percentages.length;
+	}
+
 	// Set GW%
 	// Set OGW%
 }
@@ -201,7 +232,7 @@ function getStandings (currentRound, playerList, matchList) {
 		}
 	}
 	else if (currentRound == 1) {
-		// Print out a list of zero record players
+		// Return a list of zero record players
 	}
 	else {
 		// Return an empty standings object
@@ -210,37 +241,21 @@ function getStandings (currentRound, playerList, matchList) {
 }
 
 
-/** Gets the match points earned for a player
- *  @param match {Object} The match object in question
- *  @param playerId {int} The ID of the player in question
- */
-function getMatchResult (match, playerId) {
-	var poc = playerId == match.p1 ? match.p1 : match.p2;
-	if (p1g > p2g) {
-		return match.p1 == poc ? 3 : 0;
-	}
-	else if (p1g < p2g) {
-		return match.p1 == poc ? 0 : 3;
-	}
-	else if (p1g=p2g) {
-		return 1;
-	}
-}
-
 // match
 var matchTemplate = {
-	mId : "r2m3",
+	matchId : "r2m3",
 	round: 3,
-	p1 : 3,
-	p2 : 5,
+	player1 : 3,
+	player2 : 5,
 	p1g : 1,
-	p2g : 2
+	p2g : 2,
+	gamesDrawn: 0
 }
 
 // player
 var playerTemplate = {
 	name : "steve", 
-	pId : 3,
+	playerId : 3,
 	points: 0,
 	gamePoints : 0,
 	gamesPlayed : 0,
