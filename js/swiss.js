@@ -161,12 +161,28 @@ function initialPairings (playerList) {
 }
 
 function refreshPlayers (playerlist, matchList) {
+	// Zero Out
 	for (var i = 0; i < playerList.length; i++) {
-		playerList[i].points = 0;
+		var playerObj = playerList[i];
+		playerObj.points = 0;
+		playerObj.gamePoints = 0;
+		playerObj.OMW = 0;
+		playerObj.GWP = 0;
+		playerObj.OGW = 0;
 	}
+	// Give out points for each match's result
 	for (var i = 0; i < matchList.length; i++) {
-
+		var matchObj = matchList[i],
+			player1 = getPlayerByNum(matchObj.p1),
+			player2 = getPlayerByNum(matchObj.p2);
+		player1.points += getMatchResult(matchObj, player1.pId);
+		player2.points += getMatchResult(matchObj, player2.pId);
+		player1.gamesPlayed += matchObj.p1g + matchObj.p2g;
+		player2.gamesPlayed += matchObj.p1g + matchObj.p2g;
 	}
+	// Set OMW
+	// Set GW%
+	// Set OGW%
 }
 
 /** Gets the standings for the current state 
@@ -200,13 +216,13 @@ function getStandings (currentRound, playerList, matchList) {
  */
 function getMatchResult (match, playerId) {
 	var poc = playerId == match.p1 ? match.p1 : match.p2;
-	if (p1games > p2games) {
+	if (p1g > p2g) {
 		return match.p1 == poc ? 3 : 0;
 	}
-	else if (p1games < p2games) {
+	else if (p1g < p2g) {
 		return match.p1 == poc ? 0 : 3;
 	}
-	else if (p1games=p2games) {
+	else if (p1g=p2g) {
 		return 1;
 	}
 }
@@ -225,6 +241,12 @@ var matchTemplate = {
 var playerTemplate = {
 	name : "steve", 
 	pId : 3,
+	points: 0,
+	gamePoints : 0,
+	gamesPlayed : 0,
+	OMW : 0,
+	GWP : 0,
+	OGW : 0,
 	matches : [2,5,9,19],
-	played : [1,5,9]
+	prevOpps : [1,5,9]
 }
