@@ -69,10 +69,10 @@ function getRandomIndex (length) {
 /** Returns either 0.333 or the match win percentage rounded to thousandths, 
  *  whichever is greater.
  *  @param points {Number} the number of points the player has earned
- *  @param matches {Number} the number of matches the player has played
+ *  @param encounters {Number} the number of games or matches the player has played
  */
-function calculateMWP (points, matches) {
-	var percentage = Math.round(points/(matches*3)*1000)/1000;
+function calculateWP (points, encounters) {
+	var percentage = Math.round(points/(encounters*3)*1000)/1000;
 	return 0.333 > percentage ? 0.333 : percentage;
 }
 
@@ -101,19 +101,19 @@ function createMatchObj (player1, player2, round, id) {
 	// Special bye logic
 	if (player1 == '0') {
 		match.player1 = player2;
-		match.player2 = "BYE";
+		match.player2 = byePlayer;
 	}
 	else if (player2 == '0') {
 		match.player1 = player1;
-		match.player2 = "BYE";
+		match.player2 = byePlayer;
 	}
 
 	// Create a normal match
 	else {
 		match.player1 = player1;
 		match.player2 = player2;
-		match.round = round;
 	}
+	match.round = round;
 	console.log("Returning match: " + match.matchId);
 	return match;
 }
@@ -201,29 +201,33 @@ function refreshPlayers (playerlist, matchList) {
 		player1.gamePoints += matchObj.player1g*3 + matchObj.gamesDrawn;
 		player2.gamePoints += matchObj.player2g*3 + matchObj.gamesDrawn;
 	}
-	// Set OMW
+	// Set player's percentages
 	for (var i = 0; i < playerList.length; i++) {
-		var percentages = [],
+		var currentPlayer = playerList[i],
+			oppMatchRateArr = [],
+			oppGamesPlayed = 0,
+			oppGamePoints = 0,
 			omwSum = 0;
-		for (var x = 0; x < playerList[i].prevOpps.length; x++) {
-			var opponent = getPlayerByNum(playerList[i].prevOpps[x]);
-			percentages.push(calculateMWP(opponent.matches.length, opponent.points));
+		for (var x = 0; x < currentPlayer.prevOpps.length; x++) {
+			var opponent = getPlayerByNum(currentPlayer.prevOpps[x]);
+			oppMatchRateArr.push(calculateWP(opponent.points, opponent.matches.length));
+			oppGameRateArr.push(calculateWP(opponent.gamePoints, opponent.gamesPlayed));
 		}
-		playerList[i].OMW = percentages.reduce(function(a,b) { return a + b;})/percentages.length;
+		currentPlayer.OMW = oppMatchRateArr.reduce(function(a,b) { return a + b;})/oppMatchRateArr.length;
+		currentPlayer.GWP = (playerList[i].gamePoints)/(playerList[i].gamesPlayed*3)
+		currentPlayer.OGW = oppGameRateArr.reduce(function(a,b) {return a + b;})/oppGameRateArr.length;
 	}
-
-	// Set GW%
-	// Set OGW%
 }
 
 /** Gets the standings for the current state 
  *
  */
 function getStandings (currentRound, playerList, matchList) {
-	var standings = [],
+	var standings = [],	
 		rankings = {};
 	if (currentRound > 1) {
 		for (var i = 0; i < matchList.length; i++) {
+			refreshPlayers(playerList, matchList);
 			// Get players in order of points
 
 			// Get players OMW%
@@ -250,7 +254,10 @@ var matchTemplate = {
 	p1g : 1,
 	p2g : 2,
 	gamesDrawn: 0
-}
+};
+var byePlayer = {
+	name : "BYE"
+};
 
 // player
 var playerTemplate = {
@@ -264,4 +271,4 @@ var playerTemplate = {
 	OGW : 0,
 	matches : [2,5,9,19],
 	prevOpps : [1,5,9]
-}
+};

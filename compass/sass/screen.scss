@@ -1,0 +1,84 @@
+/* Welcome to Compass.
+ * In this file you should write your main styles. (or centralize your imports)
+ * Import this file using the following HTML or equivalent:
+ * <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" /> */
+
+@import "compass/reset";
+
+
+// Color Variables
+$blank: #FCFEF5;
+$off : #FAFBE3;
+$accent : #CDCFB7;
+$light : #E9FFE1;
+$heavy : #D6E6C3;
+$black : #3D352A;
+
+// Color list for loops
+$color-list : blank $blank, off $off, accent $accent, light $light, heavy $heavy, black $black;
+
+// Font size list for loops
+$font-size-list : xsmall 12px, small 14px, reg 16px, large 20px, xlarge 24px, xxlarge 28px, xxxlarge 36px;
+
+// Breakpoints
+$break-tiny : 320px;
+$break-small : 640px;
+$break-large : 1024px;
+
+// Resets
+body { 
+    font-size : 16px;
+}
+
+// GLOBALS
+.sans { 
+    font-family : "Trebuchet MS", "sans-serif";
+}
+.serif {
+    font-family : "Palatino Linotype", "Palatino", "serif";
+}
+.code {
+    font-family : "Lucida Console", "Monaco", "monospace";
+}
+
+// COLORS
+@each $context in $color-list {
+    .c-#{nth($context, 1)} {
+        color: #{nth($context, 2)};
+    }
+    .bg-#{nth($context, 1)} {
+        background-color: #{nth($context, 2)};
+    }
+}
+
+// TEXT MANIPULATION
+@each $context in $font-size-list {
+    .fs-#{nth($context, 1)} {
+        font-size: #{nth($context, 2)};
+    }
+}
+.center {
+    text-align: center;
+}
+.bold {
+    font-weight: bold;
+}
+.underline { 
+    text-decoration: underline;
+}
+
+@media (max-width: $break-tiny) {
+
+}
+
+@media handheld and (min-width: $break-tiny+1), screen and (min-width: $break-tiny+1) and (max-width:$break-small) {
+    color:'blue';
+}
+
+@media screen and (min-width: $break-small+1) and (max-width:$break-large) {
+
+}
+
+@media screen and (min-widht: $break-large+1) {
+
+}
